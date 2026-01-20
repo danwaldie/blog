@@ -1,17 +1,18 @@
 <?php
 
+use App\Http\Controllers\AdminPostController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicPostController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
+Route::get('/', [PublicPostController::class, 'index'])->name('blog.index');
+Route::get('/posts/{post:slug}', [PublicPostController::class, 'show'])->name('blog.show');
+
+Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+    Route::resource('posts', AdminPostController::class)->except(['show']);
+    Route::post('posts/{post}/publish', [AdminPostController::class, 'publish'])->name('posts.publish');
 });
 
 Route::get('/dashboard', function () {
