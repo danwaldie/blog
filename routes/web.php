@@ -10,11 +10,6 @@ use Inertia\Inertia;
 Route::get('/', [PublicPostController::class, 'index'])->name('blog.index');
 Route::get('/posts/{post:slug}', [PublicPostController::class, 'show'])->name('blog.show');
 
-Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
-    Route::resource('posts', AdminPostController::class)->except(['show']);
-    Route::post('posts/{post}/publish', [AdminPostController::class, 'publish'])->name('posts.publish');
-});
-
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
