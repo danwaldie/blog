@@ -19,6 +19,12 @@ class TagResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withCount('posts');
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -27,11 +33,14 @@ class TagResource extends Resource
                     ->schema([
                         Forms\Components\TextInput::make('name')
                             ->required()
-                            ->maxLength(32),
+                            ->maxLength(100)
+                            ->live(onBlur: true),
 
                         Forms\Components\TextInput::make('slug')
-                            ->required()
-                            ->maxLength(32)
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->helperText('Auto-generated on create.')
+                            ->visible(fn (?Tag $record) => $record !== null),
                     ])
             ]);
     }
@@ -42,7 +51,16 @@ class TagResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
-                    ->sortable()
+                    ->sortable(),
+                
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable(),
+                
+                Tables\Columns\TextColumn::make('posts_count')
+                    ->label('Posts')
+                    ->numeric()
+                    ->sortable(),
             ])
             ->filters([
                 //

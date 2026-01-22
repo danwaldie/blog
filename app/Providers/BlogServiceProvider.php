@@ -8,7 +8,9 @@ use App\Contracts\ExcerptGenerator;
 use App\Contracts\MarkdownRenderer;
 use App\Contracts\SlugGenerator;
 use App\Models\Post;
+use App\Models\Tag;
 use App\Observers\PostObserver;
+use App\Observers\TagObserver;
 use App\Services\CommonMarkMarkdownRenderer;
 use App\Services\SimpleExcerptGenerator;
 use App\Services\UniqueSlugGenerator;
@@ -32,5 +34,6 @@ final class BlogServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Post::observe(PostObserver::class);
+        Tag::observe(TagObserver::class);
     }
 }

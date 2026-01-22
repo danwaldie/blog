@@ -6,13 +6,16 @@ use App\Enums\PostStatus;
 use App\Filament\Resources\PostResource\Pages;
 use App\Filament\Resources\PostResource\RelationManagers;
 use App\Models\Post;
+use Carbon\CarbonImmutable;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\HtmlString;
 
 class PostResource extends Resource
 {
@@ -33,7 +36,10 @@ class PostResource extends Resource
 
                         Forms\Components\TextInput::make('slug')
                             ->helperText('Leave blank to auto-generate from title.')
-                            ->maxLength(200),
+                            ->maxLength(200)
+                            ->rule('alpha_dash')
+                            ->unique(table: 'posts', column: 'slug', ignoreRecord: true)
+                            ->dehydrateStateUsing(fn ($state) => filled($state) ? $state : null),
 
                         Forms\Components\Select::make('status')
                             ->required()
@@ -106,12 +112,38 @@ class PostResource extends Resource
                     ]),
             ])
             ->actions([
+                Tables\Actions\Action::make('preview')
+                    ->label('Preview')
+                    ->icon('heroicon-o-eye')
+                    ->modalHeading(fn (Post $record) => 'Preview: ' . $record->title)
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Close')
+                    ->modalContent(fn (Post $record) => new HtmlString(
+                        '<div class="prose max-w-none">' . ($record->body_html ?? '') . '</div>'
+                    )),
+
                 Tables\Actions\Action::make('view')
                     ->label('View')
                     ->url(fn (Post $record): string => route('blog.show', $record->slug))
                     ->openUrlInNewTab()
                     ->visible(fn (Post $record): bool => $record->status === PostStatus::Published),
 
+                Tables\Actions\Action::make('publish')
+                    ->label('Publish')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->requiresConfirmation()
+                    ->visible(fn (Post $record): bool => $record->status !== PostStatus::Published)
+                    ->action(function (Post $record): void {
+                        // IMPORTANT: instance save so model events fire
+                        $record->status = PostStatus::Published;
+                        $record->published_at ??= CarbonImmutable::now();
+                        $record->save();
+
+                        Notification::make()
+                            ->title('Post published')
+                            ->success()
+                            ->send();
+                    }),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
