@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\PostStatus;
 use App\Models\Post;
+use Carbon\CarbonImmutable;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -13,11 +14,14 @@ final class PublicPostController extends Controller
 {
     public function index(): Response
     {
+        $now = CarbonImmutable::now();
+
         $posts = Post::query()
-            ->where('status', PostStatus::Published)
+            ->where('status', [PostStatus::Published, PostStatus::Scheduled])
             ->whereNotNull('published_at')
+            ->where('published_at', '<=', $now)
             ->orderByDesc('published_at')
-            ->with('tags')
+            ->with(['tags', 'author'])
             ->get();
 
         return Inertia::render('Blog/Index', [
@@ -27,7 +31,7 @@ final class PublicPostController extends Controller
 
     public function show(Post $post): Response
     {
-        abort_unless($post->status === PostStatus::Published, 404);
+        abort_unless($post->isPubliclyVisible(), 404);
 
         $post->load('tags', 'author');
 

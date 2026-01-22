@@ -126,7 +126,7 @@ class PostResource extends Resource
                     ->label('View')
                     ->url(fn (Post $record): string => route('blog.show', $record->slug))
                     ->openUrlInNewTab()
-                    ->visible(fn (Post $record): bool => $record->status === PostStatus::Published),
+                    ->visible(fn (Post $record): bool => $record->isPubliclyVisible()),
 
                 Tables\Actions\Action::make('publish')
                     ->label('Publish')
