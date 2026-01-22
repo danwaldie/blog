@@ -1,59 +1,109 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Blog (Laravel 11 + Filament Admin + Inertia Public)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A small but production-minded personal blog built to ramp quickly on a modern Laravel backend stack (Laravel 11, PHP 8.4), with:
+* Filament v3 for the admin CMS (Posts + Tags)
+* Inertia + React for the public-facing blog pages
+* Model events (Observers) for consistent domain invariants (slugs, rendering, excerpts, publish state)
+* Strict typing (declare(strict_types=1);) across the app code
+* Pest test suite covering public visibility rules, scheduling, and key invariants
 
-## About Laravel
+## Tech Stack
+* PHP 8.4
+* Laravel 11
+* MySQL
+* Filament v3 (admin panel)
+* Inertia.js + React (public pages)
+* league/commonmark (Markdown → HTML)
+* spatie/laravel-data (DTOs / request-data shaping)
+* Pest (testing)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Key Behaviors
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Post lifecycle & visibility
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Posts have three statuses:
+* draft — never publicly visible
+* published — visible when published_at <= now()
+* scheduled — becomes visible when published_at <= now()
 
-## Learning Laravel
+This repo intentionally treats scheduling as a visibility rule (not a cron-driven state transition). Once the scheduled time passes, the post becomes publicly visible automatically.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### Observers
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Observers are used for data consistency, not side-effect orchestration:
+* PostObserver
+  * generates a unique slug when blank
+  * renders markdown to HTML when markdown changes
+  * generates an excerpt (when excerpt is empty)
+  * enforces published_at invariants:
+  * set when status becomes Published
+  * cleared when status becomes Draft
+* TagObserver
+  * generates a unique slug on create (Tag slugs are stable even if name changes)
 
-## Laravel Sponsors
+Important: bulk updates like Post::query()->where(...)->update([...]) bypass model events.
+This repo includes tests that demonstrate that behavior explicitly.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Service container (DI)
 
-### Premium Partners
+Markdown rendering, excerpt generation, and slug generation are implemented behind interfaces and bound in a service provider, so the “magic” stays understandable and testable.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## Local Setup
 
-## Contributing
+### Requirements
+* PHP 8.4
+* Composer
+* Node.js + npm
+* MySQL (local, e.g., DBngin)
+* (Optional) Redis
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Install
 
-## Code of Conduct
+composer install
+npm install
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Configure environment
 
-## Security Vulnerabilities
+Copy .env.example to .env and set your MySQL credentials:
+```
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=blog
+DB_USERNAME=root
+DB_PASSWORD=
+```
+Generate key, run migrations, seed an admin user:
+```
+php artisan key:generate
+php artisan migrate
+php artisan db:seed
+```
+### Run the app
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Start the frontend dev server:
 
-## License
+`npm run dev`
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Then open the app (Valet example):
+* Public blog: https://blog.test/
+* Admin panel: https://blog.test/admin
+
+Admin credentials (local only)
+
+Seeded via AdminUserSeeder:
+* Email: admin@example.com
+* Password: password
+
+### Testing
+
+Run the full test suite:
+
+`composer test`
+
+Feature tests cover:
+* public visibility rules (draft/published/scheduled)
+* scheduled visibility timing
+* slug uniqueness
+* observer invariants (published_at behavior)
+* admin access control
