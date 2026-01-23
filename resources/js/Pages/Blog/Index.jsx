@@ -7,50 +7,51 @@ export default function Index({ posts }) {
         <BlogLayout>
             <Head title="Welcome to my Blog" />
 
-            <div className="space-y-16">
-                <header>
-                    <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl">
-                        Latest Stories
+            <div className="space-y-20">
+                <header className="space-y-6">
+                    <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-5xl">
+                        Writing
                     </h1>
-                    <p className="mt-4 text-xl text-gray-500 max-w-2xl">
-                        Thoughts, tutorials, and snippets on software development and beyond.
+                    <p className="text-xl text-slate-500 dark:text-slate-400 max-w-2xl leading-relaxed">
+                        Thoughts on software engineering, Laravel, and building better products.
                     </p>
                 </header>
 
-                <div className="grid gap-12 pt-12 border-t border-gray-100">
+                <div className="space-y-12">
                     {posts.length > 0 ? (
                         posts.map((post) => (
                             <article key={post.id} className="group relative flex flex-col items-start">
-                                <h2 className="text-2xl font-bold tracking-tight text-gray-900 group-hover:text-indigo-600 transition-colors">
-                                    <Link href={route('blog.show', post.slug)}>
-                                        <span className="absolute -inset-y-2.5 -inset-x-4 z-20 sm:-inset-x-6 sm:rounded-2xl" />
-                                        <span className="relative z-10">{post.title}</span>
-                                    </Link>
-                                </h2>
-                                <time className="relative z-10 order-first mb-3 flex items-center text-sm text-gray-400 pl-3.5" dateTime={post.published_at}>
-                                    <span className="absolute inset-y-0 left-0 flex items-center" aria-hidden="true">
-                                        <span className="h-4 w-0.5 rounded-full bg-gray-200" />
-                                    </span>
-                                    {new Date(post.published_at).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric'
-                                    })}
-                                </time>
-                                <p className="relative z-10 mt-2 text-base text-gray-600 leading-relaxed max-w-3xl">
-                                    {post.excerpt}
-                                </p>
-                                <div className="relative z-10 mt-4 flex items-center text-sm font-semibold text-indigo-600 group-hover:text-indigo-500 transition-colors">
-                                    Read more
-                                    <svg className="ml-1 h-3 w-3 stroke-current" fill="none" viewBox="0 0 10 10" aria-hidden="true">
-                                        <path d="M0 5h7M4 1l4 4-4 4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                </div>
+                                <Link href={route('blog.show', post.slug)} className="block w-full">
+                                    <div className="flex flex-col md:flex-row md:items-baseline md:gap-8">
+                                        <time className="flex-shrink-0 text-sm text-slate-400 dark:text-slate-500 font-mono mb-2 md:mb-0 w-32">
+                                            {new Date(post.published_at).toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'short',
+                                                day: 'numeric'
+                                            })}
+                                        </time>
+
+                                        <div className="flex-1 space-y-3">
+                                            <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                                                {post.title}
+                                            </h2>
+                                            <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                                                {post.excerpt}
+                                            </p>
+                                            <div className="flex items-center text-sm font-medium text-emerald-600 dark:text-emerald-500 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                                                Read article
+                                                <svg className="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Link>
                             </article>
                         ))
                     ) : (
-                        <div className="text-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-                            <p className="text-gray-500 text-lg">No posts published yet. Stay tuned!</p>
+                        <div className="text-center py-24 bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-slate-200 dark:border-slate-800 border-dashed">
+                            <p className="text-slate-500 dark:text-slate-400 text-lg">No posts published yet.</p>
                         </div>
                     )}
                 </div>
