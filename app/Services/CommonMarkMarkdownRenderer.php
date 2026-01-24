@@ -15,14 +15,10 @@ final class CommonMarkMarkdownRenderer implements MarkdownRenderer
 
     public function __construct()
     {
-        $environment = new Environment([
+        $this->converter = new CommonMarkConverter([
             'html_input' => 'strip',
             'allow_unsafe_links' => false,
         ]);
-
-        $environment->addExtension(new CommonMarkCoreExtension());
-
-        $this->converter = new CommonMarkConverter([], $environment);
     }
 
     public function toHtml(string $markdown): string

@@ -25,14 +25,20 @@ final class Post extends Model
 
     protected $casts = [
         'status' => PostStatus::class,
-        'published_at' => 'datetime',
+        'published_at' => 'immutable_datetime',
     ];
 
+    /** 
+     * @return BelongsTo<User, $this> 
+     */
     public function author(): BelongsTo 
     {
         return $this->belongsTo(User::class, 'author_id');
     }
 
+    /** 
+     * @return BelongsToMany<Tag, $this> 
+     */
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class);

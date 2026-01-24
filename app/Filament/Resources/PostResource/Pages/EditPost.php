@@ -1,16 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\PostResource\Pages;
 
 use App\Enums\PostStatus;
 use App\Filament\Resources\PostResource;
+use App\Models\Post;
 use Carbon\CarbonImmutable;
 use Filament\Actions;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Support\HtmlString;
 
-class EditPost extends EditRecord
+/** @property Post $record */
+final class EditPost extends EditRecord
 {
     protected static string $resource = PostResource::class;
 

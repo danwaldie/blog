@@ -21,13 +21,8 @@ final class PostObserver
 
         public function creating(Post $post): void
     {
-        if ($post->slug === null || $post->slug === '') {
+        if ($post->slug === '') {
             $post->slug = $this->slugGenerator->generate($post->title);
-        }
-
-        // Default to draft if unset
-        if ($post->status === null) {
-            $post->status = PostStatus::Draft;
         }
     }
 

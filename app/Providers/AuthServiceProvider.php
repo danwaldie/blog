@@ -10,7 +10,10 @@ use Illuminate\Support\ServiceProvider;
 
 final class AuthServiceProvider extends ServiceProvider
 {
-    protected $policies = [
+    /**
+     * @var array<class-string, class-string>
+     */
+    protected array $policies = [
         Post::class => PostPolicy::class,
     ];
 }

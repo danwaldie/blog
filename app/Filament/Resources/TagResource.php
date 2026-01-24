@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TagResource\Pages;
@@ -19,6 +21,9 @@ class TagResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    /**
+     * @return Builder<Tag>
+     */
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()

@@ -7,6 +7,7 @@ namespace App\Http\Requests;
 use App\Enums\PostStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 final class StorePostRequest extends FormRequest
 {
@@ -40,9 +41,9 @@ final class StorePostRequest extends FormRequest
         ];
     }
 
-    public function withValidator($validator): void
+    public function withValidator(Validator $validator): void
     {
-        $validator->sometimes('published_at', ['required'], function ($input): bool {
+        $validator->sometimes('published_at', ['required'], function (object $input): bool {
             return ($input->status ?? null) === PostStatus::Scheduled->value;
         });
     }
