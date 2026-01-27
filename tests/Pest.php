@@ -6,5 +6,5 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(Tests\TestCase::class)->in('Feature', 'Unit');
 
-// Automatically migrate DB for Feature tests
-uses(RefreshDatabase::class)->in('Feature');
+// Automatically migrate DB for Feature and Unit tests
+uses(RefreshDatabase::class)->in('Feature', 'Unit');

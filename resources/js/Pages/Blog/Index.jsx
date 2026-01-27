@@ -10,10 +10,10 @@ export default function Index({ posts }) {
             <div className="space-y-20">
                 <header className="space-y-6">
                     <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-5xl">
-                        Writing
+                        Dan Waldie
                     </h1>
                     <p className="text-xl text-slate-500 dark:text-slate-400 max-w-2xl leading-relaxed">
-                        Thoughts on software engineering, Laravel, and building better products.
+                        Science, technology, philosophy, and most of all: bad humour.
                     </p>
                 </header>
 

@@ -4,18 +4,25 @@ namespace App\Filament\Resources;
 
 use App\Enums\PostStatus;
 use App\Filament\Resources\PostResource\Pages;
-use App\Filament\Resources\PostResource\RelationManagers;
+use App\Filament\Resources\PostResource\RelationManagers\CommentsRelationManager;
 use App\Models\Post;
 use Carbon\CarbonImmutable;
 use Filament\Forms;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\MarkdownEditor;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\HtmlString;
 
 class PostResource extends Resource
 {
@@ -27,21 +34,21 @@ class PostResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Post')
+                Section::make('Post')
                     ->schema([
-                        Forms\Components\TextInput::make('title')
+                        TextInput::make('title')
                             ->required()
                             ->maxLength(200)
                             ->live(onBlur: true),
 
-                        Forms\Components\TextInput::make('slug')
+                        TextInput::make('slug')
                             ->helperText('Leave blank to auto-generate from title.')
                             ->maxLength(200)
                             ->rule('alpha_dash')
                             ->unique(table: 'posts', column: 'slug', ignoreRecord: true)
                             ->dehydrateStateUsing(fn ($state) => filled($state) ? $state : null),
 
-                        Forms\Components\Select::make('status')
+                        Select::make('status')
                             ->required()
                             ->options([
                                 PostStatus::Draft->value => 'Draft',
@@ -50,24 +57,24 @@ class PostResource extends Resource
                             ])
                             ->live(),
 
-                        Forms\Components\DateTimePicker::make('published_at')
+                        DateTimePicker::make('published_at')
                             ->helperText('Required for Scheduled posts. Auto-set when publishing.')
                             ->visible(fn (Forms\Get $get): bool => $get('status') !== PostStatus::Draft->value),
 
-                        Forms\Components\Textarea::make('excerpt')
+                        Textarea::make('excerpt')
                             ->disabled()
                             ->helperText('Auto-generated from content unless you set it manually in your flow.')
                             ->rows(3),
 
-                        Forms\Components\MarkdownEditor::make('body_markdown')
+                        MarkdownEditor::make('body_markdown')
                             ->required()
                             ->columnSpanFull(),
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Tags')
+                Section::make('Tags')
                     ->schema([
-                        Forms\Components\Select::make('tags')
+                        Select::make('tags')
                             ->relationship('tags', 'name')
                             ->multiple()
                             ->preload()
@@ -79,32 +86,33 @@ class PostResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->recordUrl(fn ($record) => static::getUrl('view', ['record' => $record->getKey()]))
             ->columns([
-                Tables\Columns\TextColumn::make('title')
+                TextColumn::make('title')
                     ->searchable()
                     ->sortable()
                     ->limit(50),
 
-                Tables\Columns\TextColumn::make('status')
+                TextColumn::make('status')
                     ->badge()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('published_at')
+                TextColumn::make('published_at')
                     ->dateTime()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('author.name')
+                TextColumn::make('author.name')
                     ->label('Author')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('tags.name')
+                TextColumn::make('tags.name')
                     ->label('Tags')
                     ->badge()
                     ->separator(', ')
                     ->limit(3),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
+                SelectFilter::make('status')
                     ->options([
                         PostStatus::Draft->value => 'Draft',
                         PostStatus::Published->value => 'Published',
@@ -112,23 +120,14 @@ class PostResource extends Resource
                     ]),
             ])
             ->actions([
-                Tables\Actions\Action::make('preview')
-                    ->label('Preview')
-                    ->icon('heroicon-o-eye')
-                    ->modalHeading(fn (Post $record) => 'Preview: ' . $record->title)
-                    ->modalSubmitAction(false)
-                    ->modalCancelActionLabel('Close')
-                    ->modalContent(fn (Post $record) => new HtmlString(
-                        '<div class="prose max-w-none">' . ($record->body_html ?? '') . '</div>'
-                    )),
-
-                Tables\Actions\Action::make('view')
+                Action::make('view')
                     ->label('View')
+                    ->icon('heroicon-o-globe-alt')
                     ->url(fn (Post $record): string => route('blog.show', $record->slug))
                     ->openUrlInNewTab()
                     ->visible(fn (Post $record): bool => $record->isPubliclyVisible()),
 
-                Tables\Actions\Action::make('publish')
+                Action::make('publish')
                     ->label('Publish')
                     ->icon('heroicon-o-paper-airplane')
                     ->requiresConfirmation()
@@ -144,8 +143,8 @@ class PostResource extends Resource
                             ->success()
                             ->send();
                     }),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
             ->defaultSort('created_at', 'desc');
     }
@@ -153,7 +152,7 @@ class PostResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            CommentsRelationManager::class,
         ];
     }
 
@@ -162,6 +161,7 @@ class PostResource extends Resource
         return [
             'index' => Pages\ListPosts::route('/'),
             'create' => Pages\CreatePost::route('/create'),
+            'view' => Pages\ViewPost::route('/{record}'),
             'edit' => Pages\EditPost::route('/{record}/edit'),
         ];
     }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminPostController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicPostController;
 use Illuminate\Foundation\Application;
@@ -9,6 +10,8 @@ use Inertia\Inertia;
 
 Route::get('/', [PublicPostController::class, 'index'])->name('blog.index');
 Route::get('/posts/{post:slug}', [PublicPostController::class, 'show'])->name('blog.show');
+
+Route::post('/posts/{post:slug}/comments', [CommentController::class, 'store']);
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');

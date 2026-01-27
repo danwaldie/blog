@@ -17,7 +17,7 @@ final class AdminUserSeeder extends Seeder
     {
         $user = User::firstOrNew(['email' => 'admin@example.com']);
 
-        $user->name = 'Admin User';
+        $user->name = 'Dan Waldie';
         $user->password = Hash::make('password'); // local only
         $user->is_admin = true;
 

@@ -33,7 +33,13 @@ final class PublicPostController extends Controller
     {
         abort_unless($post->isPubliclyVisible(), 404);
 
-        $post->load('tags', 'author');
+        $post->load([
+            'tags', 
+            'author', 
+            'comments' => function ($query) {
+                $query->published()->latest();
+            }
+        ]);
 
         return Inertia::render('Blog/Show', [
             'post' => $post,

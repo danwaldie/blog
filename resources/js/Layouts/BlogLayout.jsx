@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
 import ThemeToggle from '@/Components/ThemeToggle';
+import { Toaster } from 'sonner';
 
 export default function BlogLayout({ children }) {
     const [scrolled, setScrolled] = useState(false);
@@ -18,8 +19,8 @@ export default function BlogLayout({ children }) {
             {/* Navigation */}
             <nav
                 className={`fixed w-full top-0 z-50 transition-all duration-300 border-b ${scrolled
-                        ? 'bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-200 dark:border-slate-800'
-                        : 'bg-white dark:bg-slate-900 border-transparent'
+                    ? 'bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-200 dark:border-slate-800'
+                    : 'bg-white dark:bg-slate-900 border-transparent'
                     }`}
             >
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -29,7 +30,7 @@ export default function BlogLayout({ children }) {
                                 href="/"
                                 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white hover:text-emerald-600 dark:hover:text-emerald-500 transition-colors"
                             >
-                                Personal Blog
+                                Dan Waldie
                             </Link>
                         </div>
                         <div className="flex items-center space-x-6">
@@ -65,7 +66,7 @@ export default function BlogLayout({ children }) {
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                         <p className="text-slate-500 dark:text-slate-400 text-sm">
-                            &copy; {new Date().getFullYear()} Personal Blog.
+                            &copy; {new Date().getFullYear()} Dan Waldie.
                         </p>
                         <div className="flex space-x-6 text-sm text-slate-500 dark:text-slate-400">
                             <a href="#" className="hover:text-emerald-600 dark:hover:text-emerald-500 transition-colors">Twitter</a>
@@ -75,6 +76,7 @@ export default function BlogLayout({ children }) {
                     </div>
                 </div>
             </footer>
+            <Toaster position="bottom-right" richColors theme="system" />
         </div>
     );
 }
